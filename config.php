@@ -1,6 +1,0 @@
-<?php
-
-$api_key = KEY;
-$api_secret = SECRET;
-$access_token = TOKEN;
-$access_token_secret = SECRET;
