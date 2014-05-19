@@ -1,6 +1,6 @@
 <?php
 
-require_once __DIR__ . '/vendor/autoload.php';
+//require_once __DIR__ . '/vendor/autoload.php';
 
 $config = file_get_contents('config.json');
 $config = json_decode($config);
@@ -8,20 +8,21 @@ $config = json_decode($config);
 $time = time();
 
 $oauth_hash_array = [
-    'include_entities'        => false,
+    'count'                   => 100,
     'oauth_consumer_key'      => $config->api_key,
     'oauth_nonce'             => $time,
     'oauth_signature_method'  => 'HMAC-SHA1',
     'oauth_timestamp'         => $time,
-    'oauth_token'             => $config->api_secret,
+    'oauth_token'             => $config->access_token,
     'oauth_version'           => '1.0',
-    'screen_name'             => 'yougetacookie',
+    'q'                       => 'yougetacookie',
+    'result_type'             => 'recent',
 ];
 $oauth_hash = http_build_query($oauth_hash_array);
 
 $base_array = [
     'GET',
-    'https://api.twitter.com/1.1/statuses/mentions_timeline.json',
+    'https://api.twitter.com/1.1/search/tweets.json',
     $oauth_hash,
 ];
 $base_array = array_map('rawurlencode', $base_array);
@@ -38,6 +39,7 @@ $signature = base64_encode(hash_hmac('sha1', $base, $key, true));
 $signature = rawurlencode($signature);
 
 $oauth_header_array = [
+    'count'                   => 100,
     'oauth_consumer_key'      => $config->api_key,
     'oauth_nonce'             => $time,
     'oauth_signature'         => $signature,
@@ -45,6 +47,8 @@ $oauth_header_array = [
     'oauth_timestamp'         => $time,
     'oauth_token'             => $config->access_token,
     'oauth_version'           => '1.0',
+    'q'                       => 'yougetacookie',
+    'result_type'             => 'recent',
 ];
 $oauth_header = '';
 foreach ($oauth_header_array as $oauth_header_key => $oauth_header_value) {
@@ -52,9 +56,9 @@ foreach ($oauth_header_array as $oauth_header_key => $oauth_header_value) {
 }
 
 $curl_handle = curl_init();
-curl_setopt($curl_handle, CURLOPT_HTTPHEADER, ["Authorization: Oauth {$oauth_header}", 'Expect:');
+curl_setopt($curl_handle, CURLOPT_HTTPHEADER, ["Authorization: Oauth {$oauth_header}", 'Expect:']);
 curl_setopt($curl_handle, CURLOPT_HEADER, false);
-curl_setopt($curl_handle, CURLOPT_URL, 'https://api.twitter.com/1.1/statuses/mentions_timeline.json');
+curl_setopt($curl_handle, CURLOPT_URL, 'https://api.twitter.com/1.1/search/tweets.json?count=100&q=yougetacookie&result_type=recent');
 curl_setopt($curl_handle, CURLOPT_RETURNTRANSFER, true);
 curl_setopt($curl_handle, CURLOPT_SSL_VERIFYPEER, false);
 $json = curl_exec($curl_handle);
